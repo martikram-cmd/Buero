@@ -1,0 +1,14 @@
+{% extends "buero/pdf/basis.html" %}
+{% block titel %}{{ b.betreff }}{% endblock %}
+{% block info %}
+<table>
+  <tr><td>Datum</td><td>{{ b.datum|date:"d.m.Y" }}</td></tr>
+  <tr><td>Unser Zeichen</td><td>{{ b.nummer }}</td></tr>
+  <tr><td>Kundennummer</td><td>{{ b.kunde.nummer }}</td></tr>
+  <tr><td>Ansprechpartner</td><td>{{ firma.kontakt_name }}</td></tr>
+</table>
+{% endblock %}
+{% block inhalt %}
+<h1 style="font-size:11pt">{{ b.betreff }}</h1>
+<div class="text">{{ b.text }}</div>
+{% endblock %}

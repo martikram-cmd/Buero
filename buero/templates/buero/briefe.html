@@ -1,0 +1,10 @@
+{% extends "buero/basis.html" %}
+{% block titel %}Briefe{% endblock %}
+{% block inhalt %}
+<div class="kopfzeile"><h1>Geschäftsbriefe</h1><a class="btn primaer" href="{% url 'brief_neu' %}">Neuer Brief</a></div>
+<div class="tabelle-wrap"><table class="liste">
+<tr><th>Nummer</th><th>Datum</th><th>Empfänger</th><th>Betreff</th><th>Versand</th></tr>
+{% for b in briefe %}<tr><td><a href="{{ b.get_absolute_url }}">{{ b.nummer }}</a></td><td>{{ b.datum|date:"d.m.Y" }}</td><td>{{ b.kunde.anzeigename }}</td><td>{{ b.betreff }}</td><td>{{ b.versendet_am|date:"d.m.Y"|default:"–" }}</td></tr>
+{% empty %}<tr><td colspan="5" class="leer">Noch keine Briefe.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

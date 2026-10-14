@@ -1,0 +1,32 @@
+{% extends "buero/basis.html" %}{% load buero_tags %}
+{% block titel %}{{ e.lieferant }} {{ e.nummer }}{% endblock %}
+{% block inhalt %}
+<div class="kopfzeile"><h1>{{ e.lieferant|default:"Eingangsrechnung" }} {{ e.nummer }}</h1><a class="btn" href="{% url 'eingang_datei' e.pk %}">Original herunterladen</a></div>
+<div class="zwei">
+<div>
+<div class="tabelle-wrap"><table class="liste">
+<tr><th>Bezeichnung</th><th class="r">Menge</th><th class="r">Einzelpreis</th><th class="r">USt.</th><th class="r">Netto</th></tr>
+{% for p in e.daten.positionen %}<tr><td>{{ p.bezeichnung }}</td><td class="r">{{ p.menge }} {{ p.einheit }}</td><td class="r">{{ p.einzelpreis }}</td><td class="r">{{ p.ust_satz }} %</td><td class="r">{{ p.netto }}</td></tr>
+{% empty %}<tr><td colspan="5" class="leer">Keine Positionen gefunden.</td></tr>{% endfor %}
+</table></div>
+<div class="summenbox" style="margin-top:12px">
+<div><span>Netto</span><span>{{ e.netto|euro }}</span></div><div><span>Steuer</span><span>{{ e.steuer|euro }}</span></div><div class="gesamt"><span>Gesamt ({{ e.waehrung }})</span><span>{{ e.brutto|euro }}</span></div></div>
+<details style="margin-top:20px"><summary>XML anzeigen</summary><pre class="xml">{{ e.xml }}</pre></details>
+</div>
+<div class="karte">
+<dl class="daten">
+<dt>Lieferant</dt><dd>{{ e.lieferant }}{% if e.daten.lieferant_adresse %}<br><small>{{ e.daten.lieferant_adresse }}</small>{% endif %}</dd>
+{% if e.lieferant_ust_id %}<dt>USt-IdNr.</dt><dd>{{ e.lieferant_ust_id }}</dd>{% endif %}
+<dt>Rechnungsdatum</dt><dd>{{ e.datum|date:"d.m.Y" }}</dd>
+<dt>Fällig</dt><dd>{{ e.faellig_am|date:"d.m.Y"|default:"–" }}</dd>
+{% if e.iban %}<dt>IBAN</dt><dd>{{ e.iban|iban }}</dd>{% endif %}
+<dt>Format</dt><dd>{{ e.format }}</dd>
+<dt>Datei</dt><dd><small>{{ e.dateiname }}</small></dd>
+</dl>
+{% if girocode %}<div style="margin-top:14px;display:flex;gap:12px;align-items:center"><img src="{{ girocode }}" alt="GiroCode zum Bezahlen" width="120" height="120" style="background:#fff;padding:6px;border-radius:4px"><small>Mit der Banking-App scannen, um die Überweisung vorzubefüllen.</small></div>{% endif %}
+<form method="post" style="margin-top:16px;display:flex;flex-direction:column;gap:10px">{% csrf_token %}
+<label><input type="checkbox" name="bezahlt" {% if e.bezahlt %}checked{% endif %}> Bezahlt</label>
+<textarea name="notiz" rows="3" placeholder="Notiz" aria-label="Notiz">{{ e.notiz }}</textarea>
+<button class="primaer">Speichern</button></form>
+</div></div>
+{% endblock %}

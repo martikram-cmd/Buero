@@ -1,0 +1,11 @@
+<tr class="position">
+  <td>{{ pf.id }}{{ pf.artikel }}</td>
+  <td class="bez">{{ pf.bezeichnung }}{{ pf.beschreibung }}{% for e in pf.non_field_errors %}<div style="color:var(--rot);font-size:13px">{{ e }}</div>{% endfor %}{% for f in pf %}{% for e in f.errors %}<div style="color:var(--rot);font-size:13px">{{ f.label }}: {{ e }}</div>{% endfor %}{% endfor %}</td>
+  <td class="schmal">{{ pf.menge }}</td>
+  <td>{{ pf.einheit }}</td>
+  <td class="schmal">{{ pf.einzelpreis }}</td>
+  <td class="schmal">{{ pf.rabatt }}</td>
+  <td>{{ pf.ust_kategorie }}{{ pf.ust_satz }}</td>
+  <td class="r netto"></td>
+  <td><label title="Position entfernen" style="font-size:12px;white-space:nowrap">{{ pf.DELETE }} entfernen</label></td>
+</tr>

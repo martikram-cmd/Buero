@@ -1,0 +1,11 @@
+{% extends "buero/basis.html" %}
+{% block titel %}{{ titel }}{% endblock %}
+{% block inhalt %}
+<h1>{{ titel }}</h1>
+<div class="karte">
+<form method="post" class="formular">{% csrf_token %}
+{% for f in form %}{% include "buero/_feld.html" %}{% endfor %}
+<div class="feld breit"><label>Anhänge</label><div>{% for a in anhaenge %}{% if a %}<span class="status grau" style="margin-right:6px">{{ a.name|cut:"rechnungen/"|cut:"mahnungen/"|cut:"briefe/" }}</span>{% endif %}{% endfor %}{% if pdf_link %} <a href="{{ pdf_link }}" target="_blank">ansehen</a>{% endif %}</div></div>
+<div class="feld breit aktionen"><button class="primaer">Jetzt senden</button><a class="btn" href="{{ zurueck }}">Abbrechen</a></div>
+</form></div>
+{% endblock %}

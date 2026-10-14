@@ -1,0 +1,13 @@
+Django==5.1.4
+djangorestframework==3.15.2
+drf-spectacular==0.28.0
+dj-database-url==2.3.0
+psycopg[binary]==3.2.3
+gunicorn==23.0.0
+whitenoise==6.8.2
+weasyprint==63.1
+drafthorse==2.4.0
+segno==1.6.1
+pypdf==5.1.0
+lxml==6.1.3
+Pillow==12.3.0

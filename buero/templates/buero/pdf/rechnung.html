@@ -1,0 +1,51 @@
+{% extends "buero/pdf/basis.html" %}{% load buero_tags %}
+{% block titel %}{{ r.titel }} {{ r.nummer|default:"Entwurf" }}{% endblock %}
+{% block info %}
+<table>
+  <tr><td>{{ r.titel }}snummer</td><td><b>{{ r.nummer|default:"(Entwurf)" }}</b></td></tr>
+  <tr><td>Rechnungsdatum</td><td>{{ r.datum|date:"d.m.Y" }}</td></tr>
+  {% if r.leistung_bis %}<tr><td>Leistungszeitraum</td><td>{{ r.leistung_von|date:"d.m.Y" }} – {{ r.leistung_bis|date:"d.m.Y" }}</td></tr>
+  {% else %}<tr><td>Leistungsdatum</td><td>{{ r.leistung_von|date:"d.m.Y" }}</td></tr>{% endif %}
+  <tr><td>Kundennummer</td><td>{{ r.kunde.nummer }}</td></tr>
+  {% if r.kunde.ust_id %}<tr><td>Ihre USt-IdNr.</td><td>{{ r.kunde.ust_id }}</td></tr>{% endif %}
+  {% if r.bestellnummer %}<tr><td>Ihre Bestellung</td><td>{{ r.bestellnummer }}</td></tr>{% endif %}
+  {% if r.kaeufer_referenz or r.kunde.leitweg_id %}<tr><td>Ihre Referenz</td><td>{{ r.referenz }}</td></tr>{% endif %}
+  <tr><td>Ansprechpartner</td><td>{{ firma.kontakt_name }}</td></tr>
+</table>
+{% endblock %}
+{% block inhalt %}
+<h1>{{ r.titel }} {{ r.nummer|default:"" }}{% if r.betreff %}<br><span style="font-size:10pt;font-weight:normal">{{ r.betreff }}</span>{% endif %}</h1>
+{% if r.bezug %}<p>Bezug: Rechnung {{ r.bezug.nummer }} vom {{ r.bezug.datum|date:"d.m.Y" }}</p>{% endif %}
+{% if einleitung %}<div class="text">{{ einleitung }}</div>{% endif %}
+<table class="pos">
+  <thead><tr><th>Pos.</th><th>Bezeichnung</th><th class="r">Menge</th><th class="r">Einzelpreis</th><th class="r">USt.</th><th class="r">Gesamt netto</th></tr></thead>
+  <tbody>
+  {% for p in positionen %}
+  <tr>
+    <td>{{ forloop.counter }}</td>
+    <td>{{ p.bezeichnung }}{% if p.beschreibung %}<div class="beschreibung">{{ p.beschreibung }}</div>{% endif %}{% if p.rabatt %}<div class="beschreibung">abzgl. {{ p.rabatt|zahl }} % Rabatt ({{ p.rabatt_betrag|euro }})</div>{% endif %}</td>
+    <td class="r">{{ p.menge|menge }} {{ p.einheit_text }}</td>
+    <td class="r">{{ p.einzelpreis|euro }}</td>
+    <td class="r">{{ p.ust_satz|zahl:0 }} %</td>
+    <td class="r">{{ p.netto|euro }}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<table class="summen">
+  <tr><td>Summe netto</td><td>{{ r.summe_netto|euro }}</td></tr>
+  {% for g in gruppen %}
+    {% if g.kategorie == "S" %}<tr><td>zzgl. {{ g.satz|zahl:0 }} % USt. auf {{ g.netto|euro }}</td><td>{{ g.steuer|euro }}</td></tr>
+    {% else %}<tr><td>0 % USt. auf {{ g.netto|euro }}</td><td>{{ g.steuer|euro }}</td></tr>{% endif %}
+  {% endfor %}
+  <tr class="gesamt"><td>{% if r.art == "381" %}Gutschriftsbetrag{% else %}Rechnungsbetrag{% endif %}</td><td>{{ r.summe_brutto|euro }}</td></tr>
+</table>
+{% for g in gruppen %}{% if g.kategorie != "S" %}<p class="klein">{{ r.befreiungsgrund|default:g.kategorie|befreiung }}</p>{% endif %}{% endfor %}
+{% if schlusstext %}<div class="text">{{ schlusstext }}</div>{% endif %}
+{% if girocode %}
+<div class="zahlung">
+  <img src="{{ girocode }}" alt="GiroCode">
+  <div class="klein">Mit der Banking-App scannen und bezahlen.<br>Empfänger: {{ firma.name }}<br>IBAN: {{ firma.iban|iban }}<br>Betrag: {{ r.summe_brutto|euro }}<br>Verwendungszweck: {{ r.nummer|default:"Entwurf" }} {{ r.kunde.nummer }}</div>
+</div>
+{% endif %}
+{% endblock %}

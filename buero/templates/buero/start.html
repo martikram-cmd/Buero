@@ -1,0 +1,33 @@
+{% extends "buero/basis.html" %}{% load buero_tags %}
+{% block titel %}Übersicht{% endblock %}
+{% block inhalt %}
+<div class="kopfzeile"><h1>Übersicht</h1>
+  <div class="aktionen"><a class="btn primaer" href="{% url 'rechnung_neu' %}">Neue Rechnung</a><a class="btn" href="{% url 'kunde_neu' %}">Neuer Kunde</a></div></div>
+<div class="kacheln">
+  <div class="karte kachel"><div class="label">Offene Forderungen</div><div class="wert">{{ offen_summe|euro }}</div><div class="label">{{ offen_anzahl }} Rechnung{{ offen_anzahl|pluralize:"en" }}</div></div>
+  <div class="karte kachel"><div class="label">Davon überfällig</div><div class="wert" style="color:{% if ueberfaellig %}var(--rot){% else %}inherit{% endif %}">{{ ueberfaellig_summe|euro }}</div><div class="label">{{ ueberfaellig|length }} Rechnung{{ ueberfaellig|length|pluralize:"en" }}</div></div>
+  <div class="karte kachel"><div class="label">Umsatz {{ jahr }} (netto)</div><div class="wert">{{ umsatz|euro }}</div><div class="label">abgeschlossene Rechnungen</div></div>
+</div>
+{% if mahnvorschlaege %}
+<h2>Überfällige Rechnungen</h2>
+<div class="tabelle-wrap"><table class="liste">
+<tr><th>Rechnung</th><th>Kunde</th><th>Fällig seit</th><th class="r">Offen</th><th>Gemahnt</th><th></th></tr>
+{% for r, vorschlag in mahnvorschlaege %}
+<tr><td><a href="{{ r.get_absolute_url }}">{{ r.nummer }}</a></td><td>{{ r.kunde.anzeigename }}</td><td>{{ r.tage_ueberfaellig }} Tagen</td><td class="r">{{ r.offen|euro }}</td>
+<td>{% if r.letzte_mahnstufe %}Stufe {{ r.letzte_mahnstufe }}{% else %}–{% endif %}</td>
+<td class="r">{% if vorschlag %}<a class="btn" href="{% url 'mahnung_erstellen' r.pk %}">{{ vorschlag.bezeichnung }} erstellen</a>{% endif %}</td></tr>
+{% endfor %}</table></div>
+{% endif %}
+{% if entwuerfe %}
+<h2>Entwürfe</h2>
+<div class="tabelle-wrap"><table class="liste">
+{% for r in entwuerfe %}<tr><td><a href="{{ r.get_absolute_url }}">Entwurf vom {{ r.datum|date:"d.m.Y" }}</a></td><td>{{ r.kunde.anzeigename }}</td><td>{{ r.betreff }}</td><td class="r">{{ r.summe_brutto|euro }}</td></tr>{% endfor %}
+</table></div>
+{% endif %}
+{% if eingang_offen %}
+<h2>Unbezahlte Eingangsrechnungen</h2>
+<div class="tabelle-wrap"><table class="liste">
+{% for e in eingang_offen %}<tr><td><a href="{{ e.get_absolute_url }}">{{ e.nummer }}</a></td><td>{{ e.lieferant }}</td><td>{% if e.faellig_am %}fällig {{ e.faellig_am|date:"d.m.Y" }}{% endif %}</td><td class="r">{{ e.brutto|euro }}</td></tr>{% endfor %}
+</table></div>
+{% endif %}
+{% endblock %}

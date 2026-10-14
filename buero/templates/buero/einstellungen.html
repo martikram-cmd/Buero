@@ -1,0 +1,24 @@
+{% extends "buero/basis.html" %}{% load buero_tags %}
+{% block titel %}Einstellungen{% endblock %}
+{% block inhalt %}
+<h1>Einstellungen</h1>
+<div class="kacheln">
+  <div class="karte"><h2 style="margin-top:0">Firma</h2><p>{% if firma %}{{ firma.name }}, {{ firma.ort }}{% else %}Noch nicht eingetragen.{% endif %}</p><a class="btn primaer" href="{% url 'firma' %}">Firmendaten bearbeiten</a></div>
+  <div class="karte"><h2 style="margin-top:0">Zugang</h2><p>Angemeldet als {{ request.user.get_username }}.</p><a class="btn" href="{% url 'password_change' %}">Passwort ändern</a> {% if request.user.is_superuser %}<a class="btn" href="/admin/">Verwaltung</a>{% endif %}</div>
+  <div class="karte"><h2 style="margin-top:0">REST-Schnittstelle</h2>
+    {% if token %}<p style="word-break:break-all"><small>Schlüssel:</small><br><code>{{ token.key }}</code></p>{% else %}<p>Noch kein API-Schlüssel erstellt.</p>{% endif %}
+    <div class="aktionen"><form method="post" action="{% url 'api_token' %}">{% csrf_token %}<button>{% if token %}Neuen Schlüssel erstellen{% else %}Schlüssel erstellen{% endif %}</button></form><a class="btn" href="{% url 'api_doku' %}" target="_blank">API-Dokumentation</a></div>
+    <p><small>Aufruf mit Kopfzeile <code>Authorization: Token &lt;Schlüssel&gt;</code></small></p></div>
+</div>
+<div class="kopfzeile" style="margin-top:24px"><h2 style="margin:0">Mahnstufen</h2><a class="btn" href="{% url 'mahnstufe_neu' %}">Neue Mahnstufe</a></div>
+<div class="tabelle-wrap"><table class="liste">
+<tr><th>Stufe</th><th>Bezeichnung</th><th>Ab Verzug</th><th class="r">Gebühr</th><th>Neue Frist</th></tr>
+{% for s in mahnstufen %}<tr><td>{{ s.stufe }}</td><td><a href="{% url 'mahnstufe_bearbeiten' s.pk %}">{{ s.bezeichnung }}</a></td><td>{{ s.tage_nach_faelligkeit }} Tagen</td><td class="r">{{ s.gebuehr|euro }}</td><td>{{ s.frist_tage }} Tage</td></tr>
+{% empty %}<tr><td colspan="5" class="leer">Keine Mahnstufen.</td></tr>{% endfor %}
+</table></div>
+<div class="kopfzeile" style="margin-top:24px"><h2 style="margin:0">Textbausteine</h2><a class="btn" href="{% url 'textbaustein_neu' %}">Neuer Textbaustein</a></div>
+<div class="tabelle-wrap"><table class="liste">
+{% for t in textbausteine %}<tr><td><a href="{% url 'textbaustein_bearbeiten' t.pk %}">{{ t.name }}</a></td><td>{{ t.get_bereich_display }}</td><td><small>{{ t.text|truncatechars:80 }}</small></td></tr>
+{% empty %}<tr><td class="leer">Keine Textbausteine.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

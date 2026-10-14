@@ -1,0 +1,26 @@
+{% extends "buero/pdf/basis.html" %}{% load buero_tags %}
+{% block titel %}{{ stufe.bezeichnung }} {{ m.nummer }}{% endblock %}
+{% block info %}
+<table>
+  <tr><td>Mahnungsnummer</td><td><b>{{ m.nummer }}</b></td></tr>
+  <tr><td>Datum</td><td>{{ m.datum|date:"d.m.Y" }}</td></tr>
+  <tr><td>Rechnung</td><td>{{ r.nummer }}</td></tr>
+  <tr><td>Rechnungsdatum</td><td>{{ r.datum|date:"d.m.Y" }}</td></tr>
+  <tr><td>Kundennummer</td><td>{{ r.kunde.nummer }}</td></tr>
+</table>
+{% endblock %}
+{% block inhalt %}
+<h1>{{ stufe.bezeichnung }}</h1>
+<div class="text">{{ m.text }}</div>
+<table class="summen">
+  <tr><td>Offener Betrag Rechnung {{ r.nummer }}</td><td>{{ m.offener_betrag|euro }}</td></tr>
+  {% if m.gebuehr %}<tr><td>Mahngebühr</td><td>{{ m.gebuehr|euro }}</td></tr>{% endif %}
+  <tr class="gesamt"><td>Zu zahlen bis {{ m.neue_frist|date:"d.m.Y" }}</td><td>{{ m.gesamt|euro }}</td></tr>
+</table>
+{% if girocode %}
+<div class="zahlung">
+  <img src="{{ girocode }}" alt="GiroCode">
+  <div class="klein">Mit der Banking-App scannen und bezahlen.<br>IBAN: {{ firma.iban|iban }}<br>Betrag: {{ m.gesamt|euro }}<br>Verwendungszweck: {{ r.nummer }} {{ m.nummer }}</div>
+</div>
+{% endif %}
+{% endblock %}

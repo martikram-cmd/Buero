@@ -1,0 +1,21 @@
+{% extends "buero/basis.html" %}{% load buero_tags %}
+{% block titel %}Mahnwesen{% endblock %}
+{% block inhalt %}
+<h1>Mahnwesen</h1>
+{% if stufen_fehlen %}<div class="meldung info" style="margin-bottom:16px">Es sind noch keine Mahnstufen angelegt. <a href="{% url 'einstellungen' %}">Unter Einstellungen anlegen</a>.</div>{% endif %}
+<h2 style="margin-top:0">Überfällige Rechnungen</h2>
+<div class="tabelle-wrap"><table class="liste">
+<tr><th>Rechnung</th><th>Kunde</th><th>Fällig am</th><th>Verzug</th><th class="r">Offen</th><th>Letzte Stufe</th><th></th></tr>
+{% for r, vorschlag in ueberfaellig %}
+<tr><td><a href="{{ r.get_absolute_url }}">{{ r.nummer }}</a></td><td>{{ r.kunde.anzeigename }}</td><td>{{ r.faellig_am|date:"d.m.Y" }}</td><td>{{ r.tage_ueberfaellig }} Tage</td><td class="r">{{ r.offen|euro }}</td><td>{{ r.letzte_mahnstufe|default:"–" }}</td>
+<td class="r"><a class="btn {% if vorschlag %}primaer{% endif %}" href="{% url 'mahnung_erstellen' r.pk %}">{% if vorschlag %}{{ vorschlag.bezeichnung }}{% else %}Mahnen{% endif %}</a></td></tr>
+{% empty %}<tr><td colspan="7" class="leer">Keine überfälligen Rechnungen.</td></tr>{% endfor %}
+</table></div>
+<h2>Erstellte Mahnungen</h2>
+<div class="tabelle-wrap"><table class="liste">
+<tr><th>Nummer</th><th>Datum</th><th>Rechnung</th><th>Kunde</th><th>Stufe</th><th class="r">Betrag</th><th>Versand</th></tr>
+{% for m in mahnungen %}<tr><td><a href="{% url 'mahnung_datei' m.pk %}" target="_blank">{{ m.nummer }}</a></td><td>{{ m.datum|date:"d.m.Y" }}</td><td><a href="{{ m.rechnung.get_absolute_url }}">{{ m.rechnung.nummer }}</a></td><td>{{ m.rechnung.kunde.anzeigename }}</td><td>{{ m.stufe }}</td><td class="r">{{ m.gesamt|euro }}</td>
+<td>{% if m.versendet_am %}{{ m.versendet_am|date:"d.m.Y" }}{% else %}<a href="{% url 'mahnung_senden' m.pk %}">senden</a>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="7" class="leer">Noch keine Mahnungen.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

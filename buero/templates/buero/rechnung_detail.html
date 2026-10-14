@@ -1,0 +1,74 @@
+{% extends "buero/basis.html" %}{% load buero_tags %}
+{% block titel %}{{ r.titel }} {{ r.nummer|default:"Entwurf" }}{% endblock %}
+{% block inhalt %}
+<div class="kopfzeile">
+  <h1>{{ r.titel }} {{ r.nummer|default:"(Entwurf)" }} <span class="status {{ r.status|status_klasse }}">{{ r.get_status_display }}</span>{% if r.ist_ueberfaellig %} <span class="status rot">{{ r.tage_ueberfaellig }} Tage überfällig</span>{% endif %}</h1>
+  <div class="aktionen">
+  {% if r.ist_entwurf %}
+    <a class="btn" href="{% url 'rechnung_bearbeiten' r.pk %}">Bearbeiten</a>
+    <a class="btn" href="{% url 'rechnung_vorschau' r.pk %}" target="_blank">Vorschau</a>
+    <form method="post" action="{% url 'rechnung_abschliessen' r.pk %}">{% csrf_token %}<button class="primaer" {% if fehlend %}disabled title="Es fehlen noch Angaben"{% endif %}>Abschließen</button></form>
+    <form method="post" action="{% url 'rechnung_loeschen' r.pk %}">{% csrf_token %}<button class="gefahr">Löschen</button></form>
+  {% else %}
+    <a class="btn" href="{% url 'rechnung_datei' r.pk 'pdf' %}" target="_blank">PDF</a>
+    {% if r.xml %}<a class="btn" href="{% url 'rechnung_datei' r.pk 'xml' %}">XRechnung (XML)</a>{% endif %}
+    <a class="btn primaer" href="{% url 'rechnung_senden' r.pk %}">Per E-Mail senden</a>
+    {% if r.status == "offen" and r.art == "380" %}<a class="btn" href="{% url 'mahnung_erstellen' r.pk %}">Mahnen</a>{% endif %}
+    {% if r.art == "380" and r.status != "storniert" %}<details style="display:inline-block"><summary class="btn gefahr">Stornieren</summary>
+      <form method="post" action="{% url 'rechnung_stornieren' r.pk %}" class="karte" style="position:absolute;z-index:2;max-width:320px">{% csrf_token %}<p style="margin-top:0">Es wird eine Stornorechnung über den vollen Betrag erstellt. Das lässt sich nicht rückgängig machen.</p><button class="gefahr">Jetzt stornieren</button></form></details>{% endif %}
+  {% endif %}
+    <form method="post" action="{% url 'rechnung_kopieren' r.pk %}">{% csrf_token %}<button>Kopieren</button></form>
+  </div>
+</div>
+{% if fehlend %}<div class="meldung info" style="margin-bottom:16px"><b>Vor dem Abschließen fehlt noch:</b><ul class="hinweisliste" style="color:inherit">{% for f in fehlend %}<li>{{ f }}</li>{% endfor %}</ul></div>{% endif %}
+<div class="zwei">
+<div>
+<div class="tabelle-wrap"><table class="liste">
+<tr><th>Pos.</th><th>Bezeichnung</th><th class="r">Menge</th><th class="r">Einzelpreis</th><th class="r">USt.</th><th class="r">Netto</th></tr>
+{% for p in r.positionen.all %}<tr><td>{{ forloop.counter }}</td><td>{{ p.bezeichnung }}{% if p.beschreibung %}<br><small style="color:var(--muted)">{{ p.beschreibung|linebreaksbr }}</small>{% endif %}{% if p.rabatt %}<br><small>−{{ p.rabatt|zahl }} % Rabatt</small>{% endif %}</td>
+<td class="r">{{ p.menge|menge }} {{ p.einheit_text }}</td><td class="r">{{ p.einzelpreis|euro }}</td><td class="r">{% if p.ust_kategorie == "S" %}{{ p.ust_satz|zahl:0 }} %{% else %}{{ p.ust_kategorie }}{% endif %}</td><td class="r">{{ p.netto|euro }}</td></tr>
+{% empty %}<tr><td colspan="6" class="leer">Keine Positionen.</td></tr>{% endfor %}
+</table></div>
+<div class="summenbox" style="margin-top:12px">
+<div><span>Summe netto</span><span>{{ r.summe_netto|euro }}</span></div>
+{% for g in gruppen %}<div><span>{% if g.kategorie == "S" %}USt. {{ g.satz|zahl:0 }} %{% else %}0 % ({{ g.kategorie }}){% endif %} auf {{ g.netto|euro }}</span><span>{{ g.steuer|euro }}</span></div>{% endfor %}
+<div class="gesamt"><span>Gesamt</span><span>{{ r.summe_brutto|euro }}</span></div>
+{% if r.bezahlt %}<div><span>Bezahlt</span><span>{{ r.bezahlt|euro }}</span></div><div><span><b>Offen</b></span><span><b>{{ r.offen|euro }}</b></span></div>{% endif %}
+</div>
+
+{% if not r.ist_entwurf and r.art == "380" %}
+<h2>Zahlungen</h2>
+<div class="tabelle-wrap"><table class="liste">
+{% for z in r.zahlungen.all %}<tr><td>{{ z.datum|date:"d.m.Y" }}</td><td>{{ z.notiz }}</td><td class="r">{{ z.betrag|euro }}</td><td class="r"><form method="post" action="{% url 'zahlung_loeschen' r.pk z.pk %}">{% csrf_token %}<button class="gefahr" style="padding:2px 8px">entfernen</button></form></td></tr>
+{% empty %}<tr><td class="leer">Noch keine Zahlung erfasst.</td></tr>{% endfor %}
+</table></div>
+{% if r.status == "offen" %}
+<form method="post" action="{% url 'zahlung_erfassen' r.pk %}" class="karte formular" style="margin-top:10px">{% csrf_token %}
+{% for f in zahlung_form %}{% include "buero/_feld.html" %}{% endfor %}
+<div class="feld" style="justify-content:flex-end"><button class="primaer">Zahlung erfassen</button></div></form>
+{% endif %}
+{% endif %}
+
+{% if r.mahnungen.exists %}
+<h2>Mahnungen</h2>
+<div class="tabelle-wrap"><table class="liste">
+{% for m in r.mahnungen.all %}<tr><td><a href="{% url 'mahnung_datei' m.pk %}" target="_blank">{{ m.nummer }}</a></td><td>Stufe {{ m.stufe }}</td><td>{{ m.datum|date:"d.m.Y" }}</td><td class="r">{{ m.gesamt|euro }}</td><td>{% if m.versendet_am %}gesendet {{ m.versendet_am|date:"d.m.Y" }}{% else %}<a href="{% url 'mahnung_senden' m.pk %}">senden</a>{% endif %}</td></tr>{% endfor %}
+</table></div>
+{% endif %}
+</div>
+
+<div class="karte">
+<dl class="daten">
+<dt>Kunde</dt><dd><a href="{{ r.kunde.get_absolute_url }}">{{ r.kunde.anzeigename }}</a><br><small>{{ r.kunde.nummer }}</small></dd>
+<dt>Datum</dt><dd>{{ r.datum|date:"d.m.Y" }}</dd>
+<dt>Leistung</dt><dd>{{ r.leistung_von|date:"d.m.Y" }}{% if r.leistung_bis %} – {{ r.leistung_bis|date:"d.m.Y" }}{% endif %}</dd>
+<dt>Fällig</dt><dd>{{ r.faellig_am|date:"d.m.Y"|default:"nach Zahlungsziel" }}</dd>
+<dt>Format</dt><dd>{% if r.format %}{{ r.get_format_display }}{% else %}{{ r.kunde.get_rechnungsformat_display }}{% endif %}</dd>
+{% if r.betreff %}<dt>Betreff</dt><dd>{{ r.betreff }}</dd>{% endif %}
+{% if r.bezug %}<dt>Bezug</dt><dd><a href="{{ r.bezug.get_absolute_url }}">{{ r.bezug.nummer }}</a></dd>{% endif %}
+{% for k in r.korrekturen.all %}<dt>Storniert durch</dt><dd><a href="{{ k.get_absolute_url }}">{{ k.nummer }}</a></dd>{% endfor %}
+{% if r.festgeschrieben_am %}<dt>Abgeschlossen</dt><dd>{{ r.festgeschrieben_am|date:"d.m.Y H:i" }}</dd>{% endif %}
+<dt>Versendet</dt><dd>{{ r.versendet_am|date:"d.m.Y H:i"|default:"noch nicht" }}</dd>
+</dl></div>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% load static %}<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block titel %}REA{% endblock %} · REA</title>
+<link rel="stylesheet" href="{% static 'buero/app.css' %}">
+</head>
+<body>
+<div class="layout">
+  <nav class="seite">
+    {% with p=request.path %}
+    <div class="marke">REA</div>
+    <a href="{% url 'start' %}" class="{% if p == '/' %}aktiv{% endif %}">Übersicht</a>
+    <a href="{% url 'rechnungen' %}" class="{% if '/rechnungen' in p %}aktiv{% endif %}">Rechnungen</a>
+    <a href="{% url 'kunden' %}" class="{% if '/kunden' in p %}aktiv{% endif %}">Kunden</a>
+    <a href="{% url 'artikel_liste' %}" class="{% if '/artikel' in p %}aktiv{% endif %}">Artikel</a>
+    <a href="{% url 'mahnwesen' %}" class="{% if '/mahn' in p %}aktiv{% endif %}">Mahnwesen</a>
+    <a href="{% url 'briefe' %}" class="{% if '/briefe' in p %}aktiv{% endif %}">Briefe</a>
+    <a href="{% url 'eingang' %}" class="{% if '/eingang' in p %}aktiv{% endif %}">Eingangsrechnungen</a>
+    <a href="{% url 'einstellungen' %}" class="{% if '/einstellungen' in p %}aktiv{% endif %}">Einstellungen</a>
+    {% endwith %}
+    <div class="unten">{{ request.user.get_username }} · <form method="post" action="{% url 'logout' %}" style="display:inline">{% csrf_token %}<button style="padding:0;border:0;background:none;color:var(--accent);text-decoration:underline">Abmelden</button></form></div>
+  </nav>
+  <main>
+    {% if messages %}<div class="meldungen">{% for m in messages %}<div class="meldung {{ m.tags }}">{{ m }}</div>{% endfor %}</div>{% endif %}
+    {% block inhalt %}{% endblock %}
+  </main>
+</div>
+{% block skript %}{% endblock %}
+</body>
+</html>

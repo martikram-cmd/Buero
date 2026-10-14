@@ -1,0 +1,48 @@
+# REA auf der Synology: Container Manager → Projekt → Erstellen → diesen Ordner wählen
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: rea
+      POSTGRES_USER: rea
+      POSTGRES_PASSWORD: ${REA_DB_PASSWORD:?Bitte REA_DB_PASSWORD in .env setzen}
+    volumes:
+      - ./daten/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rea -d rea"]
+      interval: 10s
+      retries: 10
+
+  app:
+    build: .
+    image: rea:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      REA_DATABASE_URL: postgres://rea:${REA_DB_PASSWORD}@db:5432/rea
+      REA_MEDIA_ROOT: /app/data/media
+    volumes:
+      - ./daten/dokumente:/app/data/media
+    ports:
+      - "${REA_PORT:-8100}:8000"
+
+  # Tägliche Datenbanksicherung nach ./daten/sicherung (14 Tage aufbewahrt)
+  sicherung:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${REA_DB_PASSWORD}
+    volumes:
+      - ./daten/sicherung:/sicherung
+    entrypoint: >
+      sh -c 'while true; do
+        pg_dump -h db -U rea -d rea -Fc -f /sicherung/rea-$$(date +%Y-%m-%d).dump &&
+        find /sicherung -name "rea-*.dump" -mtime +14 -delete;
+        sleep 86400; done'

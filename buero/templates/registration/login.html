@@ -1,0 +1,13 @@
+{% load static %}<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Anmelden · REA</title><link rel="stylesheet" href="{% static 'buero/app.css' %}"></head>
+<body><div class="login">
+<h1 style="color:var(--accent)">REA</h1>
+<div class="karte">
+<form method="post" style="display:flex;flex-direction:column;gap:12px">{% csrf_token %}
+  {% if form.errors %}<div class="meldung error">Benutzername oder Passwort ist falsch.</div>{% endif %}
+  <div class="feld"><label for="id_username">Benutzername</label>{{ form.username }}</div>
+  <div class="feld"><label for="id_password">Passwort</label>{{ form.password }}</div>
+  <input type="hidden" name="next" value="{{ next }}">
+  <button class="primaer" type="submit">Anmelden</button>
+</form></div></div></body></html>

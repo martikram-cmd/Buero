@@ -1,0 +1,87 @@
+:root{
+  --bg:#f4f5f3; --panel:#fff; --fg:#1d2420; --muted:#5d6a63; --line:#dde2de; --accent:#1f6f54; --accent-fg:#fff; --accent-soft:#e2f0ea;
+  --gelb:#8a6a12; --gelb-bg:#f6efd9; --rot:#9b3434; --rot-bg:#f7e4e4; --gruen:#1f6f54; --gruen-bg:#e2f0ea; --grau-bg:#eceeed;
+  --font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#131816; --panel:#1b211e; --fg:#e4ebe7; --muted:#9aa8a0; --line:#2d3631; --accent:#5cc49b; --accent-fg:#0f1a15; --accent-soft:#1f3a2f;
+  --gelb:#e0b955; --gelb-bg:#3a3220; --rot:#e08a8a; --rot-bg:#3d2626; --gruen:#5cc49b; --gruen-bg:#1f3a2f; --grau-bg:#262d29; color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 var(--font)}
+a{color:var(--accent)}
+.layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+nav.seite{background:var(--panel);border-right:1px solid var(--line);padding:20px 12px;display:flex;flex-direction:column;gap:2px}
+nav.seite .marke{font-weight:700;font-size:20px;letter-spacing:.04em;padding:0 10px 16px;color:var(--accent)}
+nav.seite a{display:block;padding:7px 10px;border-radius:6px;text-decoration:none;color:var(--fg)}
+nav.seite a:hover{background:var(--grau-bg)}
+nav.seite a.aktiv{background:var(--accent-soft);color:var(--accent);font-weight:600}
+nav.seite .unten{margin-top:auto;font-size:13px;color:var(--muted);padding:10px}
+main{padding:28px 32px 60px;min-width:0;max-width:1200px}
+h1{font-size:24px;margin:0 0 18px}
+h2{font-size:16px;margin:28px 0 10px}
+.kopfzeile{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:18px}
+.kopfzeile h1{margin:0}
+.aktionen{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.aktionen form{margin:0}
+.btn,button{font:inherit;cursor:pointer;display:inline-block;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;padding:7px 14px;text-decoration:none;line-height:1.3}
+.btn:hover,button:hover{border-color:var(--muted)}
+.btn.primaer,button.primaer{background:var(--accent);border-color:var(--accent);color:var(--accent-fg);font-weight:600}
+.btn.gefahr,button.gefahr{color:var(--rot)}
+.karte{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px}
+.kacheln{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:10px}
+.kachel .wert{font-size:24px;font-weight:600;font-variant-numeric:tabular-nums}
+.kachel .label{color:var(--muted);font-size:13px}
+.tabelle-wrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:8px}
+table.liste{width:100%;border-collapse:collapse}
+table.liste th{text-align:left;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.liste td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+table.liste tr:last-child td{border-bottom:0}
+.r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.leer{color:var(--muted);padding:18px}
+.status{display:inline-block;font-size:12px;font-weight:600;padding:1px 8px;border-radius:10px}
+.status.gelb{background:var(--gelb-bg);color:var(--gelb)} .status.gruen{background:var(--gruen-bg);color:var(--gruen)}
+.status.rot{background:var(--rot-bg);color:var(--rot)} .status.grau{background:var(--grau-bg);color:var(--muted)}
+.meldungen{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.meldung{padding:10px 14px;border-radius:6px;background:var(--accent-soft);color:var(--fg)}
+.meldung.error{background:var(--rot-bg);color:var(--rot)}
+.meldung.info{background:var(--gelb-bg);color:var(--gelb)}
+form.formular{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px 20px}
+.feld{display:flex;flex-direction:column;gap:4px;min-width:0}
+.feld.breit{grid-column:1/-1}
+.feld label{font-size:13px;font-weight:600}
+.feld .hilfe{font-size:12px;color:var(--muted)}
+.feld .fehler{font-size:13px;color:var(--rot)}
+input,select,textarea{font:inherit;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 9px;width:100%}
+input[type=checkbox]{width:auto}
+input[type=color]{padding:2px;height:36px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.zwei{display:grid;grid-template-columns:2fr 1fr;gap:20px;align-items:start}
+dl.daten{display:grid;grid-template-columns:max-content 1fr;gap:6px 16px;margin:0}
+dl.daten dt{color:var(--muted)}
+dl.daten dd{margin:0}
+.suche{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.suche input{max-width:320px}
+.filter a{margin-right:10px}
+.filter a.aktiv{font-weight:600;text-decoration:none;color:var(--fg)}
+table.positionen td{padding:6px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+table.positionen th{font-size:12px;text-align:left;color:var(--muted);padding:4px}
+table.positionen input,table.positionen select,table.positionen textarea{padding:5px 6px;font-size:14px}
+table.positionen .bez{min-width:220px}
+table.positionen .schmal{width:90px}
+.summenbox{margin-left:auto;max-width:340px}
+.summenbox div{display:flex;justify-content:space-between;padding:3px 0;font-variant-numeric:tabular-nums}
+.summenbox .gesamt{font-weight:700;border-top:1px solid var(--fg);margin-top:4px;padding-top:6px}
+.hinweisliste{margin:0;padding-left:18px;color:var(--rot)}
+pre.xml{max-height:420px;overflow:auto;font-size:12px;background:var(--grau-bg);padding:12px;border-radius:6px}
+.login{max-width:360px;margin:12vh auto;padding:0 16px}
+@media (max-width:800px){
+  .layout{grid-template-columns:1fr}
+  nav.seite{flex-direction:row;flex-wrap:wrap;border-right:0;border-bottom:1px solid var(--line);padding:10px}
+  nav.seite .marke{padding:6px 10px}
+  nav.seite .unten{margin-top:0}
+  main{padding:20px 16px 50px}
+  .zwei{grid-template-columns:1fr}
+}
+table.positionen select[name$="-einheit"]{min-width:110px}
+table.positionen select[name$="-ust_kategorie"],table.positionen select[name$="-ust_satz"]{min-width:150px}
+table.positionen select[name$="-artikel"]{min-width:120px}

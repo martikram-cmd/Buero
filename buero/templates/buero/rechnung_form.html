@@ -1,0 +1,96 @@
+{% extends "buero/basis.html" %}
+{% block titel %}{% if rechnung.pk %}Rechnungsentwurf bearbeiten{% else %}Neue Rechnung{% endif %}{% endblock %}
+{% block inhalt %}
+<h1>{% if rechnung.pk %}Rechnungsentwurf bearbeiten{% else %}Neue Rechnung{% endif %}</h1>
+<form method="post" id="rechnungsformular">{% csrf_token %}
+<div class="karte"><div class="formular" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px 20px">
+  {% for e in form.non_field_errors %}<div class="feld breit"><span class="fehler">{{ e }}</span></div>{% endfor %}
+  {% for f in form %}{% if f.name not in "einleitung schlusstext befreiungsgrund" %}{% include "buero/_feld.html" %}{% endif %}{% endfor %}
+</div></div>
+
+<h2>Positionen</h2>
+{{ formset.management_form }}
+{% for e in formset.non_form_errors %}<p class="fehler" style="color:var(--rot)">{{ e }}</p>{% endfor %}
+<div class="tabelle-wrap" style="padding:8px">
+<table class="positionen" style="width:100%"><thead><tr>
+<th>Artikel</th><th>Bezeichnung / Beschreibung</th><th>Menge</th><th>Einheit</th><th>Preis netto</th><th>Rabatt %</th><th>Steuer</th><th class="r">Netto</th><th></th></tr></thead>
+<tbody id="positionen">
+{% for pf in formset %}{% include "buero/_position.html" %}{% endfor %}
+</tbody></table>
+<template id="leere-position">{% with pf=formset.empty_form %}{% include "buero/_position.html" %}{% endwith %}</template>
+<div class="aktionen" style="margin:10px 4px"><button type="button" id="position-neu">+ Position</button></div>
+<div class="summenbox" id="summen"></div>
+</div>
+
+<h2>Texte</h2>
+<div class="karte"><div class="formular" style="display:grid;grid-template-columns:1fr;gap:14px">
+  {% for f in form %}{% if f.name in "einleitung schlusstext befreiungsgrund" %}{% include "buero/_feld.html" %}{% endif %}{% endfor %}
+  {% if textbausteine %}<div class="feld"><label>Textbaustein einfügen</label>
+  <select id="baustein"><option value="">– auswählen –</option>{% for t in textbausteine %}<option value="{{ t.text }}" data-bereich="{{ t.bereich }}">{{ t.name }}</option>{% endfor %}</select></div>{% endif %}
+  <p class="hilfe" style="margin:0;color:var(--muted);font-size:13px">Platzhalter: {nummer}, {datum}, {faellig_am}, {betrag}, {kunde}</p>
+</div></div>
+
+<div class="aktionen" style="margin-top:18px">
+  <button class="primaer" type="submit">Entwurf speichern</button>
+  <button type="submit" name="abschliessen" value="1">Speichern und abschließen</button>
+  <a class="btn" href="{% if rechnung.pk %}{{ rechnung.get_absolute_url }}{% else %}{% url 'rechnungen' %}{% endif %}">Abbrechen</a>
+</div>
+</form>
+{{ artikel_daten|json_script:"artikel-daten" }}
+{% endblock %}
+{% block skript %}
+<script>
+(function(){
+  const artikel = JSON.parse(document.getElementById('artikel-daten').textContent);
+  const tbody = document.getElementById('positionen');
+  const total = document.getElementById('id_positionen-TOTAL_FORMS');
+  const de = n => n.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €';
+  const num = v => parseFloat(String(v||'0').replace(',','.')) || 0;
+  const r2 = n => Math.round((n + Number.EPSILON) * 100) / 100;
+  function zeileRechnen(tr){
+    const g = n => tr.querySelector(`[name$="-${n}"]`);
+    if (g('DELETE') && g('DELETE').checked) { tr.querySelector('.netto').textContent=''; return null; }
+    const brutto = r2(num(g('menge').value) * num(g('einzelpreis').value));
+    const netto = r2(brutto - r2(brutto * num(g('rabatt').value) / 100));
+    tr.querySelector('.netto').textContent = de(netto);
+    return {netto, kat: g('ust_kategorie').value, satz: num(g('ust_satz').value)};
+  }
+  function rechnen(){
+    const gruppen = {}; let summe = 0;
+    tbody.querySelectorAll('tr.position').forEach(tr => {
+      const z = zeileRechnen(tr); if(!z) return;
+      summe += z.netto; const k = z.kat + '|' + z.satz; gruppen[k] = (gruppen[k]||0) + z.netto;
+    });
+    let steuer = 0, html = `<div><span>Summe netto</span><span>${de(r2(summe))}</span></div>`;
+    Object.entries(gruppen).forEach(([k, n]) => { const satz = num(k.split('|')[1]); const s = r2(r2(n) * satz / 100); steuer += s;
+      html += `<div><span>USt. ${satz.toLocaleString('de-DE')} % auf ${de(r2(n))}</span><span>${de(s)}</span></div>`; });
+    html += `<div class="gesamt"><span>Gesamt</span><span>${de(r2(summe + steuer))}</span></div>`;
+    document.getElementById('summen').innerHTML = html;
+  }
+  tbody.addEventListener('change', e => {
+    const tr = e.target.closest('tr.position');
+    if (e.target.name && e.target.name.endsWith('-artikel') && artikel[e.target.value]) {
+      const a = artikel[e.target.value], g = n => tr.querySelector(`[name$="-${n}"]`);
+      g('bezeichnung').value = a.bezeichnung; g('beschreibung').value = a.beschreibung; g('einheit').value = a.einheit;
+      g('einzelpreis').value = a.preis; g('ust_satz').value = a.ust; g('ust_kategorie').value = 'S';
+    }
+    if (e.target.name && e.target.name.endsWith('-ust_kategorie') && e.target.value !== 'S') {
+      tr.querySelector('[name$="-ust_satz"]').value = '0.00';
+    }
+    rechnen();
+  });
+  tbody.addEventListener('input', rechnen);
+  document.getElementById('position-neu').addEventListener('click', () => {
+    const i = parseInt(total.value, 10);
+    const html = document.getElementById('leere-position').innerHTML.replace(/__prefix__/g, i);
+    tbody.insertAdjacentHTML('beforeend', html); total.value = i + 1; rechnen();
+    tbody.lastElementChild.querySelector('[name$="-bezeichnung"]').focus();
+  });
+  const b = document.getElementById('baustein');
+  if (b) b.addEventListener('change', () => { if(!b.value) return;
+    const ziel = document.getElementById(b.selectedOptions[0].dataset.bereich === 'schluss' ? 'id_schlusstext' : 'id_einleitung');
+    ziel.value = b.value; b.value=''; });
+  rechnen();
+})();
+</script>
+{% endblock %}

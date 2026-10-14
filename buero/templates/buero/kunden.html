@@ -1,0 +1,12 @@
+{% extends "buero/basis.html" %}
+{% block titel %}Kunden{% endblock %}
+{% block inhalt %}
+<div class="kopfzeile"><h1>Kunden</h1><a class="btn primaer" href="{% url 'kunde_neu' %}">Neuer Kunde</a></div>
+<form class="suche" method="get"><input type="search" name="q" value="{{ q }}" placeholder="Name, Nummer, Ort, E-Mail" aria-label="Kunden suchen"><button>Suchen</button></form>
+<div class="tabelle-wrap"><table class="liste">
+<tr><th>Nr.</th><th>Name</th><th>Ort</th><th>E-Mail</th><th>Format</th></tr>
+{% for k in kunden %}
+<tr><td><a href="{{ k.get_absolute_url }}">{{ k.nummer }}</a></td><td><a href="{{ k.get_absolute_url }}">{{ k.anzeigename }}</a>{% if k.firma and k.personenname %}<br><small>{{ k.personenname }}</small>{% endif %}</td><td>{{ k.plz }} {{ k.ort }}</td><td>{{ k.email }}</td><td>{{ k.get_rechnungsformat_display|truncatewords:1 }}</td></tr>
+{% empty %}<tr><td colspan="5" class="leer">Noch keine Kunden. Lege den ersten mit „Neuer Kunde“ an.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

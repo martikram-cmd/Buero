@@ -1,0 +1,64 @@
+{% load buero_tags %}<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>{% block titel %}{% endblock %}</title>
+<style>
+  @page {
+    size: A4;
+    margin: 20mm 20mm 35mm 25mm;
+    @bottom-left { content: element(fuss); width: 165mm; }
+    @top-right { content: "Seite " counter(page) " von " counter(pages); font-size: 7.5pt; color: #666; }
+  }
+  body { font-family: "DejaVu Sans", "Liberation Sans", Arial, sans-serif; font-size: 9.5pt; line-height: 1.4; color: #222; }
+  .akzent { color: {{ firma.akzentfarbe }}; }
+  .kopf { display: flex; justify-content: space-between; align-items: flex-start; height: 25mm; }
+  .kopf img { max-height: 20mm; max-width: 60mm; }
+  .kopf .firmenname { font-size: 14pt; font-weight: bold; color: {{ firma.akzentfarbe }}; }
+  /* Anschriftfeld nach DIN 5008 Form B */
+  .anschrift { position: absolute; top: 25mm; left: 0; width: 85mm; height: 40mm; }
+  .absenderzeile { font-size: 7pt; color: #666; border-bottom: 0.5pt solid #999; padding-bottom: 1mm; margin-bottom: 3mm; }
+  .infoblock { position: absolute; top: 25mm; right: 0; width: 70mm; font-size: 8.5pt; }
+  .infoblock table { width: 100%; border-collapse: collapse; }
+  .infoblock td { padding: 0.4mm 0; }
+  .infoblock td:last-child { text-align: right; }
+  .inhalt { margin-top: 60mm; }
+  h1 { font-size: 14pt; margin: 0 0 5mm; }
+  table.pos { width: 100%; border-collapse: collapse; margin: 4mm 0; }
+  table.pos th { text-align: left; font-size: 8pt; border-bottom: 1pt solid {{ firma.akzentfarbe }}; padding: 1.5mm 1mm; }
+  table.pos td { vertical-align: top; padding: 1.5mm 1mm; border-bottom: 0.5pt solid #ddd; }
+  table.pos .r { text-align: right; white-space: nowrap; }
+  .beschreibung { font-size: 8pt; color: #555; white-space: pre-line; }
+  table.summen { margin-left: auto; width: 80mm; border-collapse: collapse; }
+  table.summen td { padding: 1mm; }
+  table.summen td:last-child { text-align: right; }
+  table.summen tr.gesamt td { font-weight: bold; border-top: 1pt solid #222; font-size: 10.5pt; }
+  .text { white-space: pre-line; margin: 4mm 0; }
+  .zahlung { display: flex; gap: 8mm; align-items: center; margin-top: 6mm; page-break-inside: avoid; }
+  .zahlung img { width: 28mm; height: 28mm; }
+  .klein { font-size: 7.5pt; color: #555; }
+  .entwurf { position: fixed; top: 110mm; left: 10mm; font-size: 70pt; color: rgba(200, 0, 0, 0.12); transform: rotate(-30deg); }
+  #fuss { position: running(fuss); font-size: 7pt; color: #666; display: flex; gap: 6mm; width: 165mm; border-top: 0.5pt solid #ccc; padding-top: 1.5mm; }
+  #fuss div { flex: 1; }
+</style>
+</head>
+<body>
+<div id="fuss">
+  <div>{{ firma.name }}<br>{{ firma.strasse }}<br>{{ firma.plz }} {{ firma.ort }}{% if firma.inhaber %}<br>{{ firma.inhaber }}{% endif %}</div>
+  <div>Tel. {{ firma.telefon }}<br>{{ firma.email }}{% if firma.webseite %}<br>{{ firma.webseite }}{% endif %}</div>
+  <div>{% if firma.ust_id %}USt-IdNr. {{ firma.ust_id }}<br>{% endif %}{% if firma.steuernummer %}St.-Nr. {{ firma.steuernummer }}<br>{% endif %}{% if firma.handelsregister %}{{ firma.handelsregister }}{% endif %}</div>
+  <div>{% if firma.bank_name %}{{ firma.bank_name }}<br>{% endif %}{% if firma.iban %}IBAN {{ firma.iban|iban }}<br>{% endif %}{% if firma.bic %}BIC {{ firma.bic }}{% endif %}</div>
+  {% if firma.fusszeile %}<div>{{ firma.fusszeile|linebreaksbr }}</div>{% endif %}
+</div>
+{% if entwurf %}<div class="entwurf">ENTWURF</div>{% endif %}
+<div class="kopf">
+  <div class="firmenname">{% if logo %}<img src="{{ logo }}" alt="">{% else %}{{ firma.name }}{% endif %}</div>
+</div>
+<div class="anschrift">
+  <div class="absenderzeile">{{ firma.name }} · {{ firma.strasse }} · {{ firma.plz }} {{ firma.ort }}</div>
+  {% for z in adresse %}{{ z }}<br>{% endfor %}
+</div>
+<div class="infoblock">{% block info %}{% endblock %}</div>
+<div class="inhalt">{% block inhalt %}{% endblock %}</div>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{% extends "buero/basis.html" %}{% load buero_tags %}
+{% block titel %}Rechnungen{% endblock %}
+{% block inhalt %}
+<div class="kopfzeile"><h1>Rechnungen</h1><a class="btn primaer" href="{% url 'rechnung_neu' %}">Neue Rechnung</a></div>
+<div class="suche">
+<form method="get" style="display:flex;gap:8px"><input type="hidden" name="status" value="{{ status }}"><input type="search" name="q" value="{{ q }}" placeholder="Nummer, Kunde, Betreff" aria-label="Rechnungen suchen"><button>Suchen</button></form>
+<div class="filter" style="align-self:center"><a href="?" class="{% if not status %}aktiv{% endif %}">Alle</a>{% for k, v in stati %}<a href="?status={{ k }}" class="{% if status == k %}aktiv{% endif %}">{{ v }}</a>{% endfor %}<a href="?status=ueberfaellig" class="{% if status == 'ueberfaellig' %}aktiv{% endif %}">Überfällig</a></div>
+</div>
+<div class="tabelle-wrap"><table class="liste">
+<tr><th>Nummer</th><th>Datum</th><th>Kunde</th><th>Betreff</th><th class="r">Brutto</th><th class="r">Offen</th><th>Status</th></tr>
+{% for r in rechnungen %}
+<tr><td><a href="{{ r.get_absolute_url }}">{{ r.nummer|default:"Entwurf" }}</a>{% if r.art == "381" %} <small>({{ r.titel }})</small>{% endif %}</td><td>{{ r.datum|date:"d.m.Y" }}</td><td>{{ r.kunde.anzeigename }}</td><td>{{ r.betreff }}</td><td class="r">{{ r.summe_brutto|euro }}</td><td class="r">{% if r.status == "offen" %}{{ r.offen|euro }}{% endif %}</td>
+<td><span class="status {{ r.status|status_klasse }}">{{ r.get_status_display }}</span>{% if r.ist_ueberfaellig %} <span class="status rot">überfällig</span>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="7" class="leer">Keine Rechnungen gefunden.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

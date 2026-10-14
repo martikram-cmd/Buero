@@ -1,0 +1,24 @@
+{% extends "buero/basis.html" %}
+{% block titel %}{{ titel }}{% endblock %}
+{% block inhalt %}
+<h1>{{ titel }}</h1>
+<div class="karte">
+<form method="post" class="formular" {% if multipart %}enctype="multipart/form-data"{% endif %}>
+  {% csrf_token %}
+  {% for e in form.non_field_errors %}<div class="feld breit"><span class="fehler">{{ e }}</span></div>{% endfor %}
+  {% for f in form %}{% include "buero/_feld.html" %}{% endfor %}
+  {% if textbausteine %}
+  <div class="feld breit"><label>Textbaustein einfügen</label>
+    <select onchange="if(this.value){const t=document.querySelector('textarea[name=text]');t.value=(t.value?t.value+'\n\n':'')+this.value;this.value=''}">
+      <option value="">– auswählen –</option>{% for t in textbausteine %}<option value="{{ t.text }}">{{ t.name }}</option>{% endfor %}
+    </select></div>
+  {% endif %}
+  <div class="feld breit aktionen">
+    <button class="primaer" type="submit">Speichern</button>
+    <a class="btn" href="{{ zurueck|default:'/' }}"{% if not zurueck %} onclick="history.back();return false"{% endif %}>Abbrechen</a>
+    {% if loeschbar %}<button class="gefahr" name="loeschen" value="1" type="submit" formnovalidate>Löschen</button>{% endif %}
+  </div>
+</form>
+</div>
+{% if kunde_form %}<datalist id="anreden"><option value="Herr"><option value="Frau"><option value="Divers"></datalist>{% endif %}
+{% endblock %}

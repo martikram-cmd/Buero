@@ -1,0 +1,29 @@
+{% extends "buero/basis.html" %}{% load buero_tags %}
+{% block titel %}{{ kunde.anzeigename }}{% endblock %}
+{% block inhalt %}
+<div class="kopfzeile"><h1>{{ kunde.anzeigename }} <small style="color:var(--muted);font-weight:400">{{ kunde.nummer }}</small></h1>
+<div class="aktionen"><a class="btn primaer" href="{% url 'rechnung_neu' %}?kunde={{ kunde.pk }}">Neue Rechnung</a><a class="btn" href="{% url 'brief_neu' %}?kunde={{ kunde.pk }}">Neuer Brief</a><a class="btn" href="{% url 'kunde_bearbeiten' kunde.pk %}">Bearbeiten</a></div></div>
+<div class="zwei">
+<div>
+<h2 style="margin-top:0">Rechnungen</h2>
+<div class="tabelle-wrap"><table class="liste">
+{% for r in rechnungen %}<tr><td><a href="{{ r.get_absolute_url }}">{{ r.nummer|default:"Entwurf" }}</a></td><td>{{ r.datum|date:"d.m.Y" }}</td><td>{{ r.betreff }}</td><td class="r">{{ r.summe_brutto|euro }}</td><td><span class="status {{ r.status|status_klasse }}">{{ r.get_status_display }}</span></td></tr>
+{% empty %}<tr><td class="leer">Noch keine Rechnungen.</td></tr>{% endfor %}
+</table></div>
+{% if briefe %}<h2>Briefe</h2><div class="tabelle-wrap"><table class="liste">
+{% for b in briefe %}<tr><td><a href="{{ b.get_absolute_url }}">{{ b.nummer }}</a></td><td>{{ b.datum|date:"d.m.Y" }}</td><td>{{ b.betreff }}</td></tr>{% endfor %}
+</table></div>{% endif %}
+</div>
+<div class="karte">
+<dl class="daten">
+<dt>Anschrift</dt><dd>{% for z in kunde.adresse_zeilen %}{{ z }}<br>{% endfor %}</dd>
+{% if kunde.email %}<dt>E-Mail</dt><dd>{{ kunde.email }}</dd>{% endif %}
+{% if kunde.telefon %}<dt>Telefon</dt><dd>{{ kunde.telefon }}</dd>{% endif %}
+{% if kunde.ust_id %}<dt>USt-IdNr.</dt><dd>{{ kunde.ust_id }}</dd>{% endif %}
+{% if kunde.leitweg_id %}<dt>Leitweg-ID</dt><dd>{{ kunde.leitweg_id }}</dd>{% endif %}
+<dt>Rechnungsformat</dt><dd>{{ kunde.get_rechnungsformat_display }}</dd>
+<dt>Umsatz netto</dt><dd>{{ umsatz|euro }}</dd>
+{% if kunde.notizen %}<dt>Notizen</dt><dd>{{ kunde.notizen|linebreaksbr }}</dd>{% endif %}
+</dl></div>
+</div>
+{% endblock %}

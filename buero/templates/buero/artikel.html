@@ -1,0 +1,12 @@
+{% extends "buero/basis.html" %}{% load buero_tags %}
+{% block titel %}Artikel{% endblock %}
+{% block inhalt %}
+<div class="kopfzeile"><h1>Artikel und Leistungen</h1><a class="btn primaer" href="{% url 'artikel_neu' %}">Neuer Artikel</a></div>
+<form class="suche" method="get"><input type="search" name="q" value="{{ q }}" placeholder="Nummer oder Bezeichnung" aria-label="Artikel suchen"><button>Suchen</button></form>
+<div class="tabelle-wrap"><table class="liste">
+<tr><th>Nr.</th><th>Bezeichnung</th><th>Einheit</th><th class="r">Preis netto</th><th class="r">USt.</th><th></th></tr>
+{% for a in artikel %}
+<tr><td><a href="{% url 'artikel_bearbeiten' a.pk %}">{{ a.nummer }}</a></td><td>{{ a.bezeichnung }}</td><td>{{ a.get_einheit_display }}</td><td class="r">{{ a.preis_netto|euro }}</td><td class="r">{{ a.ust_satz|zahl:0 }} %</td><td>{% if not a.aktiv %}<span class="status grau">inaktiv</span>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="6" class="leer">Noch keine Artikel. Artikel sind optional: Positionen lassen sich auch frei eingeben.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

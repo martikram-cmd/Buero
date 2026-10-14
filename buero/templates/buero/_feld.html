@@ -1,0 +1,6 @@
+<div class="feld{% if f.field.widget.input_type == None or f.name in breit %} breit{% endif %}">
+  <label for="{{ f.id_for_label }}">{{ f.label }}{% if f.field.required %} *{% endif %}</label>
+  {{ f }}
+  {% if f.help_text %}<span class="hilfe">{{ f.help_text }}</span>{% endif %}
+  {% for e in f.errors %}<span class="fehler">{{ e }}</span>{% endfor %}
+</div>

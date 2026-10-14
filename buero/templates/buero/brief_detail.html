@@ -1,0 +1,9 @@
+{% extends "buero/basis.html" %}
+{% block titel %}{{ b.betreff }}{% endblock %}
+{% block inhalt %}
+<div class="kopfzeile"><h1>{{ b.betreff }}</h1>
+<div class="aktionen"><a class="btn" href="{% url 'brief_datei' b.pk %}" target="_blank">PDF</a><a class="btn primaer" href="{% url 'brief_senden' b.pk %}">Per E-Mail senden</a>
+{% if not b.versendet_am %}<a class="btn" href="{% url 'brief_bearbeiten' b.pk %}">Bearbeiten</a><form method="post" action="{% url 'brief_loeschen' b.pk %}">{% csrf_token %}<button class="gefahr">Löschen</button></form>{% endif %}</div></div>
+<div class="zwei"><div class="karte" style="white-space:pre-line">{{ b.text }}</div>
+<div class="karte"><dl class="daten"><dt>Nummer</dt><dd>{{ b.nummer }}</dd><dt>Datum</dt><dd>{{ b.datum|date:"d.m.Y" }}</dd><dt>Empfänger</dt><dd><a href="{{ b.kunde.get_absolute_url }}">{{ b.kunde.anzeigename }}</a></dd><dt>Versendet</dt><dd>{{ b.versendet_am|date:"d.m.Y H:i"|default:"noch nicht" }}</dd></dl></div></div>
+{% endblock %}

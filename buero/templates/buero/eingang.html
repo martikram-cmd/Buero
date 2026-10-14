@@ -1,0 +1,16 @@
+{% extends "buero/basis.html" %}{% load buero_tags %}
+{% block titel %}Eingangsrechnungen{% endblock %}
+{% block inhalt %}
+<h1>Eingangsrechnungen</h1>
+<div class="karte" style="margin-bottom:20px">
+<form method="post" enctype="multipart/form-data" class="formular">{% csrf_token %}
+{% for f in form %}{% include "buero/_feld.html" %}{% endfor %}
+<div class="feld" style="justify-content:flex-end"><button class="primaer">Einlesen</button></div>
+</form></div>
+<div class="tabelle-wrap"><table class="liste">
+<tr><th>Eingang</th><th>Lieferant</th><th>Nummer</th><th>Datum</th><th>Fällig</th><th class="r">Betrag</th><th>Format</th><th>Status</th></tr>
+{% for e in liste %}<tr><td>{{ e.eingegangen|date:"d.m.Y" }}</td><td><a href="{{ e.get_absolute_url }}">{{ e.lieferant|default:"(unbekannt)" }}</a></td><td>{{ e.nummer }}</td><td>{{ e.datum|date:"d.m.Y" }}</td><td>{{ e.faellig_am|date:"d.m.Y" }}</td><td class="r">{{ e.brutto|euro }}</td><td><small>{{ e.format }}</small></td>
+<td>{% if e.bezahlt %}<span class="status gruen">bezahlt</span>{% else %}<span class="status gelb">offen</span>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="8" class="leer">Noch keine E-Rechnungen eingelesen.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}
